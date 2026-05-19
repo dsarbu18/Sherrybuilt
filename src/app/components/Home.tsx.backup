@@ -1,0 +1,651 @@
+import { useState } from 'react';
+import { Button, TextField, Container, Box, Typography, Card, CardContent, Grid, Rating, Paper } from '@mui/material';
+import { Building2, Hammer, Home as HomeIcon, Mail, Phone, MapPin, CheckCircle2, Star, ArrowRight, Award, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
+
+export function Home() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    projectType: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const services = [
+    {
+      id: 'kitchen',
+      icon: HomeIcon,
+      title: 'Kitchen Remodeling',
+      description: 'Transform your kitchen into a stunning culinary space with custom cabinetry, modern fixtures, and premium finishes',
+      features: ['Custom Cabinetry', 'Countertop Installation', 'Modern Appliances', 'Smart Layouts'],
+      image: 'https://images.unsplash.com/photo-1682888813913-e13f18692019?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'
+    },
+    {
+      id: 'bathroom',
+      icon: Building2,
+      title: 'Bathroom Renovations',
+      description: 'Create your dream bathroom with luxury fixtures, spa-like features, and elegant tile work',
+      features: ['Luxury Fixtures', 'Tile & Stonework', 'Walk-in Showers', 'Custom Vanities'],
+      image: 'https://images.unsplash.com/photo-1638799869566-b17fa794c4de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'
+    },
+    {
+      id: 'additions',
+      icon: Hammer,
+      title: 'Home Additions',
+      description: 'Expand your living space with seamless additions that blend perfectly with your existing home',
+      features: ['Room Additions', 'Second Stories', 'Sunrooms', 'Garage Conversions'],
+      image: 'https://images.unsplash.com/photo-1505798577917-a65157d3320a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'
+    },
+    {
+      id: 'basement',
+      icon: HomeIcon,
+      title: 'Basement Finishing',
+      description: 'Unlock the potential of your basement with custom designs, proper insulation, and beautiful finishes',
+      features: ['Waterproofing', 'Custom Layouts', 'Lighting Design', 'Entertainment Spaces'],
+      image: 'https://images.unsplash.com/photo-1656733911001-16912b79d2bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'
+    }
+  ];
+
+  const reviews = [
+    {
+      id: 'review-martinez',
+      name: 'Sarah & Tom Martinez',
+      rating: 5,
+      text: 'Our kitchen transformation exceeded every expectation. The attention to detail and craftsmanship was phenomenal. We now have our dream kitchen and couldn\'t be happier!',
+      project: 'Kitchen Remodeling',
+      location: 'Metro West'
+    },
+    {
+      id: 'review-clark',
+      name: 'Jennifer Clark',
+      rating: 5,
+      text: 'From design to completion, the team was professional and communicative. Our master bathroom is now a spa-like retreat. Highly recommend!',
+      project: 'Bathroom Renovation',
+      location: 'Downtown Area'
+    },
+    {
+      id: 'review-wong',
+      name: 'David & Lisa Wong',
+      rating: 5,
+      text: 'Adding a second story to our home seemed daunting, but Sheridan Built made it seamless. The quality and efficiency were outstanding. Worth every penny!',
+      project: 'Home Addition',
+      location: 'Suburban District'
+    }
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-50e10fae/quotes`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`
+          },
+          body: JSON.stringify(formData)
+        }
+      );
+
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      let data;
+
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned an invalid response. Please try again.');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit quote request');
+      }
+
+      toast.success('Quote request submitted! We\'ll be in touch within 24 hours.');
+      setFormData({ name: '', email: '', phone: '', projectType: '', message: '' });
+    } catch (error) {
+      console.error('Quote submission error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to submit quote request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section
+        className="relative h-[90vh] flex items-center justify-center text-white overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1551038247-3d9af20df552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50"></div>
+        <Container maxWidth="lg" className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Typography variant="h1" className="font-bold mb-6" sx={{ fontSize: { xs: '3rem', md: '5rem' } }}>
+              Sheridan Built
+            </Typography>
+            <Typography variant="h4" className="mb-6 font-light" sx={{ fontSize: { xs: '1.5rem', md: '2.5rem' } }}>
+              Building Excellence, Crafting Dreams
+            </Typography>
+            <Typography variant="h6" className="mb-10 max-w-2xl font-light opacity-90">
+              Premier general contractor delivering exceptional construction services with unmatched quality and craftsmanship
+            </Typography>
+            <Box className="flex gap-4 flex-wrap">
+              <Button
+                variant="contained"
+                size="large"
+                endIcon={<ArrowRight />}
+                sx={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': { backgroundColor: '#f0f0f0' }
+                }}
+                onClick={() => navigate('/quote')}
+              >
+                Get Free Quote
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{
+                  borderColor: 'white',
+                  color: 'white',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' }
+                }}
+                onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Our Services
+              </Button>
+            </Box>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 bg-white">
+        <Container maxWidth="lg">
+          <Box className="text-center mb-16">
+            <Typography variant="overline" className="text-blue-600 font-semibold text-lg tracking-wider">
+              OUR EXPERTISE
+            </Typography>
+            <Typography variant="h2" className="font-bold mt-2 mb-4 text-gray-900">
+              Remodeling & Addition Services
+            </Typography>
+            <Typography variant="h6" color="text.secondary" className="font-light max-w-3xl mx-auto">
+              Transform your space with our comprehensive remodeling and addition services.
+              From concept to completion, we deliver exceptional results that exceed expectations.
+            </Typography>
+          </Box>
+          <Grid container spacing={4}>
+            {services.map((service, index) => (
+              <Grid size={{ xs: 12, md: 6 }} key={service.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <Card className="h-full overflow-hidden hover:shadow-2xl transition-all duration-500 border border-gray-100">
+                    <Box className="relative">
+                      <Box
+                        className="h-80 bg-cover bg-center relative overflow-hidden"
+                        style={{ backgroundImage: `url(${service.image})` }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+                          whileHover={{ opacity: 0.9 }}
+                        />
+                        <Box className="absolute bottom-6 left-6 text-white z-10">
+                          <Box className="p-3 bg-blue-600 rounded-lg inline-block mb-3">
+                            <service.icon size={32} />
+                          </Box>
+                          <Typography variant="h4" className="font-bold">
+                            {service.title}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                    <CardContent className="p-8">
+                      <Typography variant="body1" color="text.secondary" className="mb-6 leading-relaxed">
+                        {service.description}
+                      </Typography>
+                      <Box className="mb-6">
+                        <Typography variant="subtitle2" className="font-bold mb-3 text-gray-900">
+                          What's Included:
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {service.features.map((feature, idx) => (
+                            <Grid size={{ xs: 6 }} key={idx}>
+                              <Box className="flex items-center gap-2">
+                                <CheckCircle2 className="text-blue-600" size={18} />
+                                <Typography variant="body2" color="text.secondary">
+                                  {feature}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        endIcon={<ArrowRight size={18} />}
+                        sx={{
+                          borderColor: 'primary.main',
+                          color: 'primary.main',
+                          fontWeight: 600,
+                          py: 1.5,
+                          '&:hover': {
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            borderColor: 'primary.main'
+                          },
+                          transition: 'all 0.3s'
+                        }}
+                        onClick={() => navigate('/quote')}
+                      >
+                        Request Quote
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </section>
+
+      {/* Reviews Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <Container maxWidth="lg">
+          <Box className="text-center mb-16">
+            <Typography variant="overline" className="text-blue-600 font-semibold text-lg tracking-wider">
+              CLIENT STORIES
+            </Typography>
+            <Typography variant="h2" className="font-bold mt-2 mb-4 text-gray-900">
+              Transformations That Speak for Themselves
+            </Typography>
+            <Typography variant="h6" color="text.secondary" className="font-light max-w-3xl mx-auto">
+              See why homeowners trust Sheridan Built for their most important projects
+            </Typography>
+          </Box>
+          <Grid container spacing={4}>
+            {reviews.map((review, index) => (
+              <Grid size={{ xs: 12, md: 4 }} key={review.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.15, duration: 0.5 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                >
+                  <Paper
+                    elevation={0}
+                    className="h-full p-8 bg-white border-2 border-gray-100 hover:border-blue-500 hover:shadow-xl transition-all duration-500 rounded-2xl"
+                  >
+                    <Box className="flex items-center justify-between mb-6">
+                      <Rating
+                        value={review.rating}
+                        readOnly
+                        size="large"
+                        sx={{ color: '#fbbf24', fontSize: '1.5rem' }}
+                      />
+                      <Star className="text-yellow-400 fill-yellow-400" size={24} />
+                    </Box>
+                    <Typography variant="body1" className="mb-6 font-normal leading-relaxed text-gray-700 italic">
+                      "{review.text}"
+                    </Typography>
+                    <Box className="border-t-2 border-blue-100 pt-5 mt-auto">
+                      <Typography variant="h6" className="font-bold text-gray-900 mb-1">
+                        {review.name}
+                      </Typography>
+                      <Typography variant="body2" className="text-blue-600 font-semibold mb-1">
+                        {review.project}
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500 flex items-center gap-1">
+                        <MapPin size={14} />
+                        {review.location}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </section>
+
+      {/* Quote Request Form */}
+      <section id="quote-form" className="py-20 bg-white">
+        <Container maxWidth="lg">
+          <Grid container spacing={8} alignItems="center">
+            <Grid size={{ xs: 12, md: 5 }}>
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Typography variant="overline" className="text-blue-600 font-semibold text-lg tracking-wider">
+                  START YOUR PROJECT
+                </Typography>
+                <Typography variant="h2" className="font-bold mt-2 mb-4 text-gray-900">
+                  Let's Build Your Dream Space
+                </Typography>
+                <Typography variant="h6" color="text.secondary" className="font-light mb-8 leading-relaxed">
+                  Tell us about your vision and we'll provide a detailed, transparent quote within 24 hours.
+                  No obligations, just honest advice and expert guidance.
+                </Typography>
+                <Box className="space-y-6">
+                  {[
+                    {
+                      id: 'response',
+                      title: '24-Hour Response',
+                      description: 'Quick turnaround on all quote requests',
+                      icon: Clock
+                    },
+                    {
+                      id: 'pricing',
+                      title: 'Transparent Pricing',
+                      description: 'Detailed estimates with no hidden costs',
+                      icon: CheckCircle2
+                    },
+                    {
+                      id: 'consultation',
+                      title: 'Free Consultation',
+                      description: 'Expert advice at no charge',
+                      icon: Award
+                    }
+                  ].map((benefit, idx) => (
+                    <motion.div
+                      key={benefit.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      viewport={{ once: true }}
+                      whileHover={{ x: 10 }}
+                    >
+                      <Box className="flex items-start gap-4 p-4 rounded-lg hover:bg-blue-50 transition-all duration-300">
+                        <Box className="p-3 bg-blue-100 rounded-lg">
+                          <benefit.icon className="text-blue-600" size={28} />
+                        </Box>
+                        <Box>
+                          <Typography variant="h6" className="font-bold mb-1">
+                            {benefit.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {benefit.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </motion.div>
+                  ))}
+                </Box>
+              </motion.div>
+            </Grid>
+            <Grid size={{ xs: 12, md: 7 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Paper elevation={6} className="p-10 bg-gradient-to-br from-white to-blue-50 rounded-3xl border border-blue-100">
+                  <Typography variant="h5" className="font-bold mb-6 text-gray-900">
+                    Request Your Free Quote
+                  </Typography>
+                  <form onSubmit={handleSubmit}>
+                    <Grid container spacing={3}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          label="Full Name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          variant="filled"
+                          sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          label="Email Address"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          variant="filled"
+                          sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          label="Phone Number"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          required
+                          variant="filled"
+                          sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          label="Project Type"
+                          name="projectType"
+                          value={formData.projectType}
+                          onChange={handleChange}
+                          placeholder="Kitchen, Bathroom, Addition..."
+                          required
+                          variant="filled"
+                          sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <TextField
+                          fullWidth
+                          label="Tell Us About Your Project"
+                          name="message"
+                          value={formData.message}
+                          onChange={handleChange}
+                          multiline
+                          rows={5}
+                          placeholder="Share your vision, timeline, budget range, and any specific requirements..."
+                          required
+                          variant="filled"
+                          sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            size="large"
+                            fullWidth
+                            disabled={isSubmitting}
+                            endIcon={<ArrowRight />}
+                            sx={{
+                              py: 2,
+                              fontSize: '1.2rem',
+                              fontWeight: 700,
+                              textTransform: 'none',
+                              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                              boxShadow: '0 8px 16px rgba(25, 118, 210, 0.3)',
+                              '&:hover': {
+                                boxShadow: '0 12px 24px rgba(25, 118, 210, 0.4)',
+                              }
+                            }}
+                          >
+                            {isSubmitting ? 'Sending Your Request...' : 'Get Your Free Quote →'}
+                          </Button>
+                        </motion.div>
+                        <Typography variant="caption" className="text-gray-500 text-center block mt-3">
+                          We respect your privacy. Your information is never shared.
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </Paper>
+              </motion.div>
+            </Grid>
+          </Grid>
+        </Container>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900 text-white relative overflow-hidden">
+        <Box className="absolute inset-0 opacity-10">
+          <Box
+            className="absolute inset-0"
+            sx={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </Box>
+        <Container maxWidth="lg" className="relative z-10">
+          <Box className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Typography variant="overline" className="text-blue-300 font-semibold text-lg tracking-wider">
+                CONTACT US
+              </Typography>
+              <Typography variant="h2" className="font-bold mt-2 mb-4">
+                Ready to Start Your Project?
+              </Typography>
+              <Typography variant="h6" className="font-light opacity-90 max-w-2xl mx-auto">
+                Reach out today and let's discuss how we can bring your vision to life
+              </Typography>
+            </motion.div>
+          </Box>
+          <Grid container spacing={4}>
+            {[
+              {
+                id: 'phone',
+                icon: Phone,
+                title: 'Call Us',
+                primary: '(555) 123-4567',
+                secondary: 'Mon-Fri, 8AM-6PM',
+                action: 'tel:5551234567',
+                color: '#10b981'
+              },
+              {
+                id: 'email',
+                icon: Mail,
+                title: 'Email Us',
+                primary: 'info@sheridanbuilt.com',
+                secondary: '24-hour response time',
+                action: 'mailto:info@sheridanbuilt.com',
+                color: '#3b82f6'
+              },
+              {
+                id: 'location',
+                icon: MapPin,
+                title: 'Visit Us',
+                primary: 'Greater Metro Area',
+                secondary: 'Serving all nearby regions',
+                action: '#',
+                color: '#f59e0b'
+              }
+            ].map((contact, index) => (
+              <Grid size={{ xs: 12, md: 4 }} key={contact.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.15 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -10, scale: 1.05 }}
+                >
+                  <a href={contact.action} className="no-underline">
+                    <Paper
+                      className="p-8 text-center bg-white/10 backdrop-blur-md border-2 border-white/20 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-500 rounded-2xl cursor-pointer"
+                      sx={{
+                        '&:hover': {
+                          boxShadow: `0 20px 40px ${contact.color}40`
+                        }
+                      }}
+                    >
+                      <motion.div
+                        whileHover={{ rotate: 360, scale: 1.1 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <Box className="flex justify-center mb-5">
+                          <Box
+                            className="p-4 rounded-2xl"
+                            sx={{ backgroundColor: contact.color }}
+                          >
+                            <contact.icon size={36} />
+                          </Box>
+                        </Box>
+                      </motion.div>
+                      <Typography variant="h5" className="font-bold mb-3">
+                        {contact.title}
+                      </Typography>
+                      <Typography variant="h6" className="opacity-90 mb-2 font-semibold">
+                        {contact.primary}
+                      </Typography>
+                      <Typography variant="body2" className="opacity-75">
+                        {contact.secondary}
+                      </Typography>
+                      <Button
+                        variant="text"
+                        endIcon={<ArrowRight size={18} />}
+                        sx={{
+                          color: 'white',
+                          mt: 3,
+                          fontWeight: 600,
+                          '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+                        }}
+                      >
+                        Connect Now
+                      </Button>
+                    </Paper>
+                  </a>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </section>
+    </div>
+  );
+}

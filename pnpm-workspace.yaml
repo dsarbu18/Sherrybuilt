@@ -1,0 +1,7 @@
+packages:
+  - '.'
+
+# Allow these packages to run build scripts without approval
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
