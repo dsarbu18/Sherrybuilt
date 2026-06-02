@@ -1,8 +1,4 @@
-# Sheridan Built - General Contractor Website
 
-A modern, professional website for Sheridan Built general contractors, featuring quote request forms, service showcases, and customer testimonials.
-
-## 🌐 Live Site
 
 - **GitHub Pages:** https://dsarbu18.github.io/Sherrybuilt/
 - **Future Custom Domain:** sheridanbuilt.com (when configured)
