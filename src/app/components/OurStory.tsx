@@ -99,7 +99,8 @@ export function OurStory() {
                     overflow: 'hidden',
                     borderRadius: '8px',
                     border: '2px solid rgba(212, 149, 42, 0.3)',
-                    boxShadow: '0 8px 32px rgba(212, 149, 42, 0.15)'
+                    boxShadow: '0 8px 32px rgba(212, 149, 42, 0.15)',
+                    width: '100%'
                   }}
                 >
                   <img
