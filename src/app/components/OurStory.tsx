@@ -87,10 +87,10 @@ export function OurStory() {
           {/* Historical Content Grid */}
           <Grid container spacing={6} alignItems="center">
             {/* Historical Image */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
                 <Box
@@ -151,10 +151,10 @@ export function OurStory() {
             </Grid>
 
             {/* Historical Text */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
                 <Box
