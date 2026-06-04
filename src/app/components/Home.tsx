@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, TextField, Container, Box, Typography, Card, CardContent, Grid } from '@mui/material';
-import { ArrowRight, CheckCircle2, Star, MapPin, Award, Clock, Phone, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Star, MapPin, Award, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { motion } from 'motion/react';
@@ -158,7 +158,7 @@ export function Home() {
                 fontFamily: "'Barlow', sans-serif",
               }}
             >
-              TORONTO, ONTARIO • EST. 2025 • LICENSED & INSURED
+              TORONTO, ONTARIO • EST. 2025
             </Typography>
             <Typography
               variant="h1"
@@ -863,153 +863,6 @@ export function Home() {
         </Container>
       </Box>
 
-      {/* Contact Section */}
-      <Box
-        sx={{
-          padding: { xs: '80px 24px', md: '100px 60px' },
-          background: '#1C1C1C',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(212, 149, 42, 0.3) 50%, transparent 100%)',
-          },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', marginBottom: '60px' }}>
-            <Typography
-              variant="overline"
-              sx={{
-                color: '#D4952A',
-                fontSize: '0.85rem',
-                letterSpacing: '0.3em',
-                fontWeight: 600,
-                marginBottom: '16px',
-                display: 'block',
-              }}
-            >
-              GET IN TOUCH
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: "'Playfair Display', serif",
-                fontWeight: 900,
-                fontSize: { xs: '2.5rem', md: '3rem' },
-                color: '#F5EFE0',
-                marginBottom: '16px',
-              }}
-            >
-              Begin Your Journey
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: '#E8DFC8',
-                fontSize: '1.05rem',
-                maxWidth: '600px',
-                margin: '0 auto',
-                lineHeight: 1.8,
-                fontWeight: 300,
-              }}
-            >
-              Connect with us today and discover how we can transform your space.
-            </Typography>
-          </Box>
-
-          <Grid container spacing={4}>
-            {[
-              {
-                id: 'phone',
-                icon: Phone,
-                title: 'Call Us',
-                primary: '(416) 555-7890',
-                secondary: 'Monday - Friday, 8AM - 6PM',
-                color: '#10b981',
-              },
-              {
-                id: 'email',
-                icon: Mail,
-                title: 'Email Us',
-                primary: 'info@sheridanbuilt.ca',
-                secondary: '24-hour response guarantee',
-                color: '#3b82f6',
-              },
-            ].map((contact, index) => (
-              <Grid size={{ xs: 12, md: 6 }} key={contact.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.15 }}
-                  viewport={{ once: true }}
-                >
-                  <Card
-                    sx={{
-                      background: 'rgba(28, 28, 28, 0.4)',
-                      border: '1px solid rgba(212, 149, 42, 0.2)',
-                      borderRadius: 0,
-                      padding: '40px',
-                      textAlign: 'center',
-                      transition: 'all 0.4s',
-                      '&:hover': {
-                        borderColor: '#D4952A',
-                        transform: 'translateY(-8px)',
-                        boxShadow: `0 12px 32px ${contact.color}20`,
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: 0,
-                        background: contact.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 24px',
-                      }}
-                    >
-                      <contact.icon size={32} style={{ color: '#1C1C1C' }} />
-                    </Box>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontFamily: "'Libre Baskerville', serif",
-                        fontWeight: 700,
-                        color: '#F5EFE0',
-                        marginBottom: '12px',
-                        fontSize: '1.4rem',
-                      }}
-                    >
-                      {contact.title}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: '#D4952A',
-                        marginBottom: '8px',
-                        fontWeight: 600,
-                        fontSize: '1.1rem',
-                      }}
-                    >
-                      {contact.primary}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#E8DFC8', fontWeight: 300 }}>
-                      {contact.secondary}
-                    </Typography>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
     </Box>
   );
 }
