@@ -19,16 +19,17 @@ export function OurStory() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <Box className="flex justify-center mb-6">
+            <Box className="flex flex-col items-center mb-6" sx={{ gap: '16px' }}>
               <Box
                 sx={{
-                  width: { xs: '140px', md: '180px' },
-                  height: { xs: '140px', md: '180px' },
+                  width: { xs: '180px', md: '220px' },
+                  height: { xs: '180px', md: '220px' },
                   borderRadius: '50%',
                   overflow: 'hidden',
                   border: '3px solid #D4952A',
                   boxShadow: '0 0 0 6px rgba(212, 149, 42, 0.15), 0 8px 32px rgba(0,0,0,0.4)',
                   display: 'inline-block',
+                  flexShrink: 0,
                 }}
               >
                 <img
@@ -41,6 +42,32 @@ export function OurStory() {
                     objectPosition: 'center top',
                   }}
                 />
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    fontFamily: '"Libre Baskerville", serif',
+                    color: '#F5EFE0',
+                    fontSize: { xs: '1rem', md: '1.1rem' },
+                    fontWeight: 700,
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Tyler Sheridan
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Barlow", sans-serif',
+                    color: '#D4952A',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    marginTop: '2px',
+                  }}
+                >
+                  Owner / Operator
+                </Typography>
               </Box>
             </Box>
             <Typography
