@@ -87,7 +87,7 @@ export function OurStory() {
           {/* Historical Content Grid */}
           <Grid container spacing={6} alignItems="center">
             {/* Historical Image */}
-            <Grid item xs={12} sx={{ flexBasis: '100%', maxWidth: '100%' }}>
+            <Grid item xs={12} sx={{ flexBasis: '75%', maxWidth: '75%', margin: '0 auto' }}>
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
