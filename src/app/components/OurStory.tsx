@@ -1,7 +1,8 @@
 import { Container, Box, Typography, Grid } from '@mui/material';
 import { motion } from 'motion/react';
-import { Building2, Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import historicalImage from '../../imports/image-3.png';
+import tylerPhoto from '../../imports/tyler.webp';
 
 export function OurStory() {
   return (
@@ -19,7 +20,28 @@ export function OurStory() {
             className="text-center"
           >
             <Box className="flex justify-center mb-6">
-              <Building2 size={64} strokeWidth={1.5} style={{ color: '#D4952A' }} />
+              <Box
+                sx={{
+                  width: { xs: '140px', md: '180px' },
+                  height: { xs: '140px', md: '180px' },
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '3px solid #D4952A',
+                  boxShadow: '0 0 0 6px rgba(212, 149, 42, 0.15), 0 8px 32px rgba(0,0,0,0.4)',
+                  display: 'inline-block',
+                }}
+              >
+                <img
+                  src={tylerPhoto}
+                  alt="Tyler Sheridan"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center top',
+                  }}
+                />
+              </Box>
             </Box>
             <Typography
               variant="h2"
