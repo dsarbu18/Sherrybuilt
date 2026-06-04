@@ -250,54 +250,113 @@ export function OurStory() {
         </Container>
       </section>
 
-      {/* Modern Day Section - Placeholder */}
+      {/* Modern Day Section */}
       <section className="py-20" style={{
         backgroundColor: 'rgba(245, 239, 224, 0.02)',
         borderTop: '1px solid rgba(212, 149, 42, 0.2)',
         borderBottom: '1px solid rgba(212, 149, 42, 0.2)'
       }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="text-center"
           >
-            <Typography
-              variant="overline"
+            <Box className="text-center mb-12">
+              <Typography
+                variant="overline"
+                sx={{
+                  fontFamily: '"Barlow", sans-serif',
+                  color: '#D4952A',
+                  fontSize: '0.95rem',
+                  letterSpacing: '3px',
+                  fontWeight: 600
+                }}
+              >
+                TODAY
+              </Typography>
+              <Typography
+                variant="h3"
+                className="font-bold mt-3"
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  color: '#F5EFE0',
+                  fontSize: { xs: '2rem', md: '2.75rem' }
+                }}
+              >
+                Sheridan Built Ltd.
+              </Typography>
+            </Box>
+
+            {/* Story paragraphs */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Barlow", sans-serif',
+                  color: '#F5EFE0',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.85,
+                }}
+              >
+                Sheridan Built Ltd. was founded by Tyler Sheridan with a commitment to quality craftsmanship, honest work, and building lasting relationships with clients.
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: '"Barlow", sans-serif',
+                  color: '#F5EFE0',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.85,
+                }}
+              >
+                The Sheridan name has a history in business spanning four generations. Founded in 1945, Sheridan Equipment Co. Ltd. operated in Leaside, Ontario, earning a reputation in the heavy equipment rental industry. When the business eventually closed, the Sheridan name stepped away from the industry.
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: '"Barlow", sans-serif',
+                  color: '#F5EFE0',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.85,
+                }}
+              >
+                Today, Tyler is proud to carry that legacy forward. As a young and ambitious contractor, he founded Sheridan Built Ltd. to revive the family name and build a reputation founded on hard work, integrity, and quality workmanship.
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: '"Barlow", sans-serif',
+                  color: '#F5EFE0',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.85,
+                }}
+              >
+                Sheridan Built Ltd. is more than a construction company—it's the continuation of a family legacy, built for the next generation.
+              </Typography>
+            </Box>
+
+            {/* Closing quote */}
+            <Box
               sx={{
-                fontFamily: '"Barlow", sans-serif',
-                color: '#D4952A',
-                fontSize: '0.95rem',
-                letterSpacing: '3px',
-                fontWeight: 600
+                mt: 6,
+                pt: 6,
+                borderTop: '1px solid rgba(212, 149, 42, 0.3)',
+                textAlign: 'center'
               }}
             >
-              TODAY
-            </Typography>
-            <Typography
-              variant="h3"
-              className="font-bold mt-3 mb-6"
-              sx={{
-                fontFamily: '"Playfair Display", serif',
-                color: '#F5EFE0',
-                fontSize: { xs: '2rem', md: '2.75rem' }
-              }}
-            >
-              Sheridan Built Ltd.
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: '"Barlow", sans-serif',
-                color: 'rgba(245, 239, 224, 0.7)',
-                fontSize: '1.1rem',
-                fontStyle: 'italic',
-                maxWidth: '700px',
-                margin: '0 auto'
-              }}
-            >
-              Current story content will be added here...
-            </Typography>
+              <Typography
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  color: '#D4952A',
+                  fontSize: { xs: '1.4rem', md: '1.75rem' },
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  letterSpacing: '0.5px'
+                }}
+              >
+                "Honouring the past. Building the future"
+              </Typography>
+            </Box>
           </motion.div>
         </Container>
       </section>
