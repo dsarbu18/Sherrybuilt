@@ -23,28 +23,18 @@ export function Home() {
       title: 'Kitchen Remodeling',
       description: 'Transform your kitchen into a stunning culinary sanctuary with custom cabinetry, premium finishes, and thoughtful design.',
       features: ['Custom Cabinetry', 'Premium Countertops', 'Designer Fixtures', 'Smart Layouts'],
-      image: 'https://images.unsplash.com/photo-1682888813913-e13f18692019?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     },
     {
       id: 'bathroom',
       title: 'Bathroom Renovations',
       description: 'Create your private spa retreat with luxury fixtures, elegant tile work, and sophisticated design elements.',
       features: ['Luxury Fixtures', 'Italian Tile', 'Walk-in Showers', 'Custom Vanities'],
-      image: 'https://images.unsplash.com/photo-1638799869566-b17fa794c4de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-    },
-    {
-      id: 'additions',
-      title: 'Home Additions',
-      description: 'Expand your living space seamlessly with architecturally integrated additions that enhance your home\'s value.',
-      features: ['Room Additions', 'Second Stories', 'Sunrooms', 'Garage Conversions'],
-      image: 'https://images.unsplash.com/photo-1505798577917-a65157d3320a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     },
     {
       id: 'basement',
       title: 'Basement Finishing',
       description: 'Unlock hidden potential with custom designs, superior insulation, and exquisite finishes for year-round comfort.',
       features: ['Waterproofing', 'Custom Layouts', 'Ambient Lighting', 'Entertainment Spaces'],
-      image: 'https://images.unsplash.com/photo-1656733911001-16912b79d2bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     },
   ];
 
@@ -316,12 +306,13 @@ export function Home() {
 
           <Grid container spacing={4}>
             {services.map((service, index) => (
-              <Grid size={{ xs: 12, md: 6 }} key={service.id}>
+              <Grid size={{ xs: 12, md: 4 }} key={service.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.15, duration: 0.6 }}
                   viewport={{ once: true }}
+                  style={{ height: '100%' }}
                 >
                   <Card
                     sx={{
@@ -329,6 +320,9 @@ export function Home() {
                       border: '1px solid rgba(212, 149, 42, 0.2)',
                       borderRadius: 0,
                       overflow: 'hidden',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
                       transition: 'all 0.4s',
                       '&:hover': {
                         borderColor: '#D4952A',
@@ -337,59 +331,38 @@ export function Home() {
                       },
                     }}
                   >
-                    <Box
-                      sx={{
-                        height: '320px',
-                        backgroundImage: `url(${service.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        position: 'relative',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(180deg, rgba(28,28,28,0) 0%, rgba(28,28,28,0.9) 100%)',
-                        },
-                      }}
-                    >
-                      <Box
+                    <CardContent sx={{ padding: '40px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                      {/* Gold accent bar */}
+                      <Box sx={{ width: '48px', height: '3px', background: '#D4952A', marginBottom: '28px' }} />
+                      <Typography
+                        variant="h4"
                         sx={{
-                          position: 'absolute',
-                          bottom: '24px',
-                          left: '24px',
-                          zIndex: 1,
+                          fontFamily: "'Playfair Display', serif",
+                          fontWeight: 900,
+                          color: '#F5EFE0',
+                          fontSize: { xs: '1.6rem', md: '1.75rem' },
+                          marginBottom: '16px',
+                          lineHeight: 1.2,
                         }}
                       >
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontFamily: "'Playfair Display', serif",
-                            fontWeight: 900,
-                            color: '#F5EFE0',
-                            fontSize: '2rem',
-                          }}
-                        >
-                          {service.title}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <CardContent sx={{ padding: '32px' }}>
+                        {service.title}
+                      </Typography>
                       <Typography
                         variant="body1"
                         sx={{
                           color: '#E8DFC8',
-                          marginBottom: '24px',
+                          marginBottom: '28px',
                           lineHeight: 1.8,
                           fontWeight: 300,
                         }}
                       >
                         {service.description}
                       </Typography>
-                      <Grid container spacing={2} sx={{ marginBottom: '24px' }}>
+                      <Grid container spacing={2} sx={{ marginBottom: '32px', flexGrow: 1 }}>
                         {service.features.map((feature, idx) => (
                           <Grid size={{ xs: 6 }} key={idx}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <CheckCircle2 size={16} style={{ color: '#D4952A' }} />
+                              <CheckCircle2 size={16} style={{ color: '#D4952A', flexShrink: 0 }} />
                               <Typography
                                 variant="body2"
                                 sx={{ color: '#E8DFC8', fontSize: '0.9rem', fontWeight: 400 }}
