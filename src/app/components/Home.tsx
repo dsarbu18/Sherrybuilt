@@ -59,8 +59,8 @@ export function Home() {
       id: 'review-wong',
       name: 'David & Lisa Wong',
       rating: 5,
-      text: 'Exceptional quality and attention to detail. The second-story addition blends seamlessly with our original home. Outstanding work.',
-      project: 'Home Addition',
+      text: 'Exceptional quality and attention to detail. Our basement finishing was completed on time and on budget. Outstanding work.',
+      project: 'Basement Finishing',
       location: 'Oakville, ON',
     },
   ];

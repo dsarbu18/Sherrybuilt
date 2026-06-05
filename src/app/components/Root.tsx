@@ -267,7 +267,7 @@ export function Root() {
                     Services
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {['Kitchen Remodeling', 'Bathroom Renovations', 'Home Additions', 'Basement Finishing'].map(
+                    {['Kitchen Remodeling', 'Bathroom Renovations', 'Basement Finishing'].map(
                       (service, idx) => (
                         <Typography
                           key={idx}

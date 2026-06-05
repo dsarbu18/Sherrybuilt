@@ -34,7 +34,6 @@ export function QuoteRequest() {
   const services = [
     'Kitchen Remodeling',
     'Bathroom Renovation',
-    'Home Addition',
     'Basement Finishing',
     'Full Home Remodel',
     'Other'
