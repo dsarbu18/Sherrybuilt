@@ -58,6 +58,14 @@ interface PortfolioImage {
 
 const ALL = 'All';
 
+// Order categories appear in the "All" collage view
+const CATEGORY_ORDER = ['Basements', 'Interior', 'Exterior', 'Kitchens', 'Bathrooms', 'Decks'];
+
+function categoryPriority(cat: string): number {
+  const i = CATEGORY_ORDER.indexOf(cat);
+  return i === -1 ? 999 : i;
+}
+
 // ─── PhotoCard ────────────────────────────────────────────────────────────────
 // Renders a single image card. If the image URL 404s (e.g. the file was moved
 // or deleted from Storage without updating the DB row), the card hides itself
@@ -67,19 +75,25 @@ function PhotoCard({
   img,
   imgIndex,
   totalInGroup,
+  columns = 2,
   onOpen,
 }: {
   img: PortfolioImage;
   imgIndex: number;
   totalInGroup: number;
+  columns?: 2 | 3;
   onOpen: () => void;
 }) {
   const [failed, setFailed] = useState(false);
 
   if (failed) return null;
 
+  const gridSize = columns === 3
+    ? { xs: 12, sm: 6, md: 4 }
+    : { xs: 12, sm: 6 };
+
   return (
-    <Grid size={{ xs: 12, sm: 6 }}>
+    <Grid size={gridSize}>
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -226,19 +240,16 @@ export function Portfolio() {
   }, []);
 
   // ── Derived ──────────────────────────────────────────────────────────────
-  const filtered =
-    activeCategory === ALL ? images : images.filter((img) => img.category === activeCategory);
+  const isAll = activeCategory === ALL;
 
-  // Group images by category for display (each category gets its own section)
-  const grouped = filtered.reduce<{ category: string; items: PortfolioImage[] }[]>((acc, img) => {
-    const last = acc[acc.length - 1];
-    if (last && last.category === img.category) {
-      last.items.push(img);
-    } else {
-      acc.push({ category: img.category, items: [img] });
-    }
-    return acc;
-  }, []);
+  const filtered = isAll
+    // "All" view: sort by category priority (Basements → Interior → Exterior → …),
+    // then by sort_order within each category
+    ? [...images].sort((a, b) => {
+        const catDiff = categoryPriority(a.category) - categoryPriority(b.category);
+        return catDiff !== 0 ? catDiff : a.sort_order - b.sort_order;
+      })
+    : images.filter((img) => img.category === activeCategory);
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
@@ -410,60 +421,63 @@ export function Portfolio() {
             </Box>
           )}
 
-          {/* Grouped sections */}
-          {!loading && !error && grouped.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
-              {grouped.map((group, groupIndex) => (
-                <motion.div
-                  key={group.category}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.1 }}
-                  viewport={{ once: true, margin: '-80px' }}
+          {/* ── "All" collage: flat 3-column grid, ordered by category ── */}
+          {!loading && !error && isAll && filtered.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Grid container spacing={1}>
+                {filtered.map((img, i) => (
+                  <PhotoCard
+                    key={img.id}
+                    img={img}
+                    imgIndex={i}
+                    totalInGroup={filtered.length}
+                    columns={3}
+                    onOpen={() => setLightbox({ src: img.image_url, alt: img.category })}
+                  />
+                ))}
+              </Grid>
+            </motion.div>
+          )}
+
+          {/* ── Filtered view: labeled flat 2-column grid ─────────────── */}
+          {!loading && !error && !isAll && filtered.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                <Box sx={{ width: '48px', height: '3px', background: '#D4952A', flexShrink: 0 }} />
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: '#D4952A',
+                    fontSize: '0.8rem',
+                    letterSpacing: '0.25em',
+                    fontWeight: 600,
+                    fontFamily: "'Barlow', sans-serif",
+                  }}
                 >
-                  {/* Section header */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
-                    <Box sx={{ width: '48px', height: '3px', background: '#D4952A', flexShrink: 0 }} />
-                    <Typography
-                      variant="overline"
-                      sx={{
-                        color: '#D4952A',
-                        fontSize: '0.8rem',
-                        letterSpacing: '0.25em',
-                        fontWeight: 600,
-                        fontFamily: "'Barlow', sans-serif",
-                      }}
-                    >
-                      {group.category}
-                    </Typography>
-                  </Box>
-
-                  {/* Photo grid — only renders cards whose image loads successfully */}
-                  <Grid container spacing={3}>
-                    {group.items.map((img, imgIndex) => (
-                      <PhotoCard
-                        key={img.id}
-                        img={img}
-                        imgIndex={imgIndex}
-                        totalInGroup={group.items.length}
-                        onOpen={() => setLightbox({ src: img.image_url, alt: img.category })}
-                      />
-                    ))}
-                  </Grid>
-
-                  {/* Section divider */}
-                  {groupIndex < grouped.length - 1 && (
-                    <Box
-                      sx={{
-                        height: '1px',
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(212,149,42,0.2) 50%, transparent 100%)',
-                        marginTop: '100px',
-                      }}
-                    />
-                  )}
-                </motion.div>
-              ))}
-            </Box>
+                  {activeCategory}
+                </Typography>
+              </Box>
+              <Grid container spacing={2}>
+                {filtered.map((img, i) => (
+                  <PhotoCard
+                    key={img.id}
+                    img={img}
+                    imgIndex={i}
+                    totalInGroup={filtered.length}
+                    columns={2}
+                    onOpen={() => setLightbox({ src: img.image_url, alt: img.category })}
+                  />
+                ))}
+              </Grid>
+            </motion.div>
           )}
 
         </Container>
