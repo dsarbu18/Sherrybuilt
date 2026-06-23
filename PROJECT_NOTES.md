@@ -63,34 +63,72 @@ In the Supabase Table Editor → `portfolio_images`:
 
 ---
 
+### Admin page security
+
+The `/admin` page and the Edge Function are protected by real Supabase Auth:
+
+| Layer | Protection |
+|---|---|
+| Admin page (`/#/admin`) | Requires valid Supabase Auth session (email + password) |
+| Edge Function | Validates session JWT server-side; rejects expired/forged tokens |
+| Admin check | Verifies the authenticated user's ID exists in `admin_users` table |
+| Service role key | Never sent to the browser — only used inside the Edge Function |
+
+An unauthenticated visitor sees only a login form. Even if they somehow got
+a valid session token, they'd also need to be in the `admin_users` table.
+
+### One-time admin setup
+
+1. Go to Supabase dashboard → **Authentication → Users → Add user**
+   - Enter your email and a strong password
+   - Copy the UUID shown for the new user
+
+2. In Supabase **SQL Editor**, run:
+   ```sql
+   insert into admin_users (id, email) values
+     ('<your-user-uuid>', 'your@email.com');
+   ```
+
+3. Deploy the Edge Function (see below).
+
+You can now sign in at `/#/admin` with those credentials.
+
+---
+
 ### Edge Function: sync-portfolio-images
 
 Location: `supabase/functions/sync-portfolio-images/index.ts`
 
-- Called via `POST` from the admin page using the public anon key
-- Uses `SUPABASE_SERVICE_ROLE_KEY` server-side to read Storage and write to the table
-- The service role key is **never** sent to the browser
-- Only inserts rows — never deletes or modifies existing ones
-- Safe to run multiple times (duplicates are prevented by unique constraint on `storage_path`)
+Security flow:
+1. Frontend sends `Authorization: Bearer <session.access_token>` (user's real JWT)
+2. Edge Function calls `supabase.auth.getUser(jwt)` — rejects invalid/expired tokens
+3. Edge Function checks `admin_users` table (via service role) — rejects non-admins
+4. Only then scans Storage and inserts missing rows
 
-**Deploying the Edge Function** (run once from your machine or CI):
+- The `SUPABASE_SERVICE_ROLE_KEY` is **never** sent to the browser
+- Only inserts rows — never deletes or modifies existing ones
+- Safe to run multiple times (unique constraint on `storage_path` prevents duplicates)
+
+**Deploying the Edge Function** (run once, requires Supabase CLI):
 
 ```bash
 supabase functions deploy sync-portfolio-images --project-ref ikqkpmviogbeowjqpfdp
 ```
 
-Or via the Supabase dashboard → Edge Functions → Deploy.
+Or via the Supabase dashboard → Edge Functions → New function → paste the code.
 
 ---
 
 ### Database migrations
 
-SQL files in `supabase/migrations/` must be run manually in the Supabase SQL Editor.
+SQL files in `supabase/migrations/` must be run manually in the Supabase SQL Editor
+in order (v1 → v2 → v3).
 
 | File | Purpose |
 |---|---|
 | `20260623_portfolio.sql` | Creates `portfolio_images` table, RLS policy, storage bucket |
-| `20260623_portfolio_v2.sql` | Adds unique constraint on `storage_path` (run after v1) |
+| `20260623_portfolio_v2.sql` | Adds unique constraint on `storage_path` |
+| `20260623_portfolio_v3.sql` | Creates `admin_users` table (required for Edge Function auth) |
 
 ---
 
