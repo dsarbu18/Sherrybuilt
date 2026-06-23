@@ -11,6 +11,7 @@ export function Root() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/our-story', label: 'Our Story' },
+    { path: '/portfolio', label: 'Portfolio' },
   ];
 
   return (
@@ -316,6 +317,23 @@ export function Root() {
                         }}
                       >
                         Our Story
+                      </Typography>
+                    </Link>
+                    <Link to="/portfolio" style={{ textDecoration: 'none' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#E8DFC8',
+                          fontFamily: "'Barlow', sans-serif",
+                          fontWeight: 300,
+                          fontSize: '0.9rem',
+                          transition: 'color 0.2s',
+                          '&:hover': {
+                            color: '#D4952A',
+                          },
+                        }}
+                      >
+                        Portfolio
                       </Typography>
                     </Link>
                     <Link to="/quote" style={{ textDecoration: 'none' }}>
