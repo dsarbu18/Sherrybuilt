@@ -58,7 +58,124 @@ interface PortfolioImage {
 
 const ALL = 'All';
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── PhotoCard ────────────────────────────────────────────────────────────────
+// Renders a single image card. If the image URL 404s (e.g. the file was moved
+// or deleted from Storage without updating the DB row), the card hides itself
+// entirely so no phantom placeholder appears in the gallery.
+
+function PhotoCard({
+  img,
+  imgIndex,
+  totalInGroup,
+  onOpen,
+}: {
+  img: PortfolioImage;
+  imgIndex: number;
+  totalInGroup: number;
+  onOpen: () => void;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) return null;
+
+  return (
+    <Grid size={{ xs: 12, sm: 6 }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: imgIndex * 0.1 }}
+        viewport={{ once: true }}
+      >
+        <Box
+          onClick={onOpen}
+          sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            border: '1px solid rgba(212, 149, 42, 0.15)',
+            transition: 'all 0.4s',
+            aspectRatio: '4/3',
+            '&:hover': {
+              borderColor: '#D4952A',
+              boxShadow: '0 12px 40px rgba(212, 149, 42, 0.18)',
+              '& .photo-overlay': { opacity: 1 },
+              '& img': { transform: 'scale(1.04)' },
+            },
+          }}
+        >
+          <Box
+            component="img"
+            src={img.image_url}
+            alt={img.category}
+            loading="lazy"
+            onError={() => setFailed(true)}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              transition: 'transform 0.5s ease',
+            }}
+          />
+          {/* Hover overlay */}
+          <Box
+            className="photo-overlay"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(28, 28, 28, 0.55)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0,
+              transition: 'opacity 0.3s ease',
+            }}
+          >
+            <Box
+              sx={{
+                width: '56px',
+                height: '56px',
+                border: '2px solid #D4952A',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(28,28,28,0.7)',
+              }}
+            >
+              <ZoomIn size={24} style={{ color: '#D4952A' }} />
+            </Box>
+          </Box>
+          {/* Index badge */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '12px',
+              right: '12px',
+              background: 'rgba(28,28,28,0.8)',
+              border: '1px solid rgba(212,149,42,0.4)',
+              padding: '4px 10px',
+            }}
+          >
+            <Typography
+              sx={{
+                color: '#D4952A',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                letterSpacing: '0.15em',
+                fontFamily: "'Barlow', sans-serif",
+                textTransform: 'uppercase',
+              }}
+            >
+              {imgIndex + 1} / {totalInGroup}
+            </Typography>
+          </Box>
+        </Box>
+      </motion.div>
+    </Grid>
+  );
+}
+
+// ─── Portfolio ────────────────────────────────────────────────────────────────
 
 export function Portfolio() {
   const navigate = useNavigate();
@@ -321,106 +438,16 @@ export function Portfolio() {
                     </Typography>
                   </Box>
 
-                  {/* Photo grid */}
+                  {/* Photo grid — only renders cards whose image loads successfully */}
                   <Grid container spacing={3}>
                     {group.items.map((img, imgIndex) => (
-                      <Grid size={{ xs: 12, sm: 6 }} key={img.id}>
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.97 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: imgIndex * 0.1 }}
-                          viewport={{ once: true }}
-                        >
-                          <Box
-                            onClick={() =>
-                              setLightbox({
-                                src: img.image_url,
-                                alt: img.title ?? img.category,
-                              })
-                            }
-                            sx={{
-                              position: 'relative',
-                              overflow: 'hidden',
-                              cursor: 'pointer',
-                              border: '1px solid rgba(212, 149, 42, 0.15)',
-                              transition: 'all 0.4s',
-                              aspectRatio: '4/3',
-                              '&:hover': {
-                                borderColor: '#D4952A',
-                                boxShadow: '0 12px 40px rgba(212, 149, 42, 0.18)',
-                                '& .photo-overlay': { opacity: 1 },
-                                '& img': { transform: 'scale(1.04)' },
-                              },
-                            }}
-                          >
-                            <Box
-                              component="img"
-                              src={img.image_url}
-                              alt={img.title ?? img.category}
-                              loading="lazy"
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                display: 'block',
-                                transition: 'transform 0.5s ease',
-                              }}
-                            />
-                            {/* Hover overlay */}
-                            <Box
-                              className="photo-overlay"
-                              sx={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'rgba(28, 28, 28, 0.55)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.3s ease',
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  width: '56px',
-                                  height: '56px',
-                                  border: '2px solid #D4952A',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  background: 'rgba(28,28,28,0.7)',
-                                }}
-                              >
-                                <ZoomIn size={24} style={{ color: '#D4952A' }} />
-                              </Box>
-                            </Box>
-                            {/* Index badge */}
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                bottom: '12px',
-                                right: '12px',
-                                background: 'rgba(28,28,28,0.8)',
-                                border: '1px solid rgba(212,149,42,0.4)',
-                                padding: '4px 10px',
-                              }}
-                            >
-                              <Typography
-                                sx={{
-                                  color: '#D4952A',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 700,
-                                  letterSpacing: '0.15em',
-                                  fontFamily: "'Barlow', sans-serif",
-                                  textTransform: 'uppercase',
-                                }}
-                              >
-                                {imgIndex + 1} / {group.items.length}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </motion.div>
-                      </Grid>
+                      <PhotoCard
+                        key={img.id}
+                        img={img}
+                        imgIndex={imgIndex}
+                        totalInGroup={group.items.length}
+                        onOpen={() => setLightbox({ src: img.image_url, alt: img.category })}
+                      />
                     ))}
                   </Grid>
 
@@ -589,18 +616,6 @@ export function Portfolio() {
                   border: '1px solid rgba(212,149,42,0.25)',
                 }}
               />
-              <Typography
-                sx={{
-                  color: 'rgba(245,239,224,0.6)',
-                  fontSize: '0.8rem',
-                  fontFamily: "'Barlow', sans-serif",
-                  marginTop: '12px',
-                  fontStyle: 'italic',
-                  textAlign: 'center',
-                }}
-              >
-                {lightbox.alt}
-              </Typography>
             </motion.div>
           </motion.div>
         )}
