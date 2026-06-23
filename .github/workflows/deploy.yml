@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # allows the self-heal step to push back protected files
   pages: write
   id-token: write
 
@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,11 +34,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: 22
 
       - name: Install dependencies
-        run: pnpm install
+        # --no-frozen-lockfile so the build works even if pnpm-lock.yaml
+        # was temporarily removed by a Figma Make sync commit
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: pnpm build
@@ -44,6 +48,24 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
+
+      # ── Self-heal: restore files that Figma Make syncs tend to delete ──────
+      # Commits deploy.yml and pnpm-lock.yaml back to main after every
+      # successful build. The [skip ci] tag prevents this commit from
+      # triggering another workflow run.
+      - name: Restore protected files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add .github/workflows/deploy.yml pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "Protected files already present — nothing to restore."
+          else
+            git commit -m "ci: restore protected files [skip ci]"
+            git push origin main
+            echo "Protected files restored and pushed."
+          fi
 
   deploy:
     runs-on: ubuntu-latest
