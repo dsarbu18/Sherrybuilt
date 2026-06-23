@@ -30,6 +30,8 @@ create index if not exists portfolio_images_visible_sort
 -- ============================================================
 alter table portfolio_images enable row level security;
 
+drop policy if exists "Public can read visible portfolio images" on portfolio_images;
+
 create policy "Public can read visible portfolio images"
   on portfolio_images
   for select
@@ -45,7 +47,9 @@ values ('portfolio', 'portfolio', true)
 on conflict (id) do nothing;
 
 -- Allow anyone to read files in the portfolio bucket (public CDN).
-create policy if not exists "Public portfolio images are readable"
+drop policy if exists "Public portfolio storage is readable" on storage.objects;
+
+create policy "Public portfolio storage is readable"
   on storage.objects
   for select
   using (bucket_id = 'portfolio');
