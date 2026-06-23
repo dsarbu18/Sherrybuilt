@@ -10,57 +10,46 @@ import joeStairs1 from '../../imports/JoeStairs1.JPG';
 import rayAppt from '../../imports/RayAppt.jpeg';
 import rayAppt1 from '../../imports/RayAppt1.jpeg';
 
-type Category = 'All' | 'Basement Finishing' | 'Exterior Work' | 'Condo Renovation';
+type Category = 'All' | 'Basement Renovation' | 'Exterior Work' | 'Flooring';
 
 interface Project {
   id: string;
   title: string;
   category: Category;
-  location: string;
-  description: string;
   photos: { src: string; alt: string }[];
 }
 
 const projects: Project[] = [
   {
-    id: 'greg-basement',
-    title: "Greg's Basement",
-    category: 'Basement Finishing',
-    location: 'Toronto, ON',
-    description:
-      'Full basement finish featuring an open-concept layout, custom wet bar with wine fridge, dedicated laundry area, and a bespoke entertainment wall with integrated TV surround and floor-to-ceiling cabinetry.',
+    id: 'basement-01',
+    title: 'Basement Renovation',
+    category: 'Basement Renovation',
     photos: [
-      { src: gregBsmt, alt: "Greg's basement — open concept with wet bar and laundry" },
-      { src: gregBsmt1, alt: "Greg's basement — custom entertainment wall with cabinetry" },
+      { src: gregBsmt, alt: 'Basement renovation — open concept with wet bar and laundry' },
+      { src: gregBsmt1, alt: 'Basement renovation — custom entertainment wall with cabinetry' },
     ],
   },
   {
-    id: 'joe-stairs',
-    title: "Joe's Exterior Stairs",
+    id: 'exterior-01',
+    title: 'Exterior Stairs',
     category: 'Exterior Work',
-    location: 'Toronto, ON',
-    description:
-      "Complete exterior stair rebuild using natural stone treads and hand-set flagging, paired with custom powder-coated steel railings. Built to last through harsh Canadian winters while elevating the home's curb appeal.",
     photos: [
-      { src: joeStairs, alt: "Joe's exterior stone stairs — front angle" },
-      { src: joeStairs1, alt: "Joe's exterior stone stairs — side angle" },
+      { src: joeStairs, alt: 'Exterior stone stairs — front angle' },
+      { src: joeStairs1, alt: 'Exterior stone stairs — side angle' },
     ],
   },
   {
-    id: 'ray-apartment',
-    title: "Ray's Condo Renovation",
-    category: 'Condo Renovation',
-    location: 'Toronto, ON',
-    description:
-      'Interior condo renovation including full LVP flooring installation throughout, trim and baseboard work, and bedroom refresh. Clean, modern finishes tailored to downtown high-rise living.',
+    id: 'flooring-01',
+    title: 'Flooring Installation',
+    category: 'Flooring',
     photos: [
-      { src: rayAppt, alt: "Ray's condo — LVP flooring and floor-to-ceiling windows" },
-      { src: rayAppt1, alt: "Ray's condo — bedroom with new flooring and trim" },
+      { src: rayAppt, alt: 'LVP flooring installation — floor-to-ceiling windows' },
+      { src: rayAppt1, alt: 'LVP flooring installation — bedroom' },
     ],
   },
 ];
 
-const categories: Category[] = ['All', 'Basement Finishing', 'Exterior Work', 'Condo Renovation'];
+const categories: Category[] = ['All', 'Basement Renovation', 'Exterior Work', 'Flooring'];
 
 export function Portfolio() {
   const navigate = useNavigate();
@@ -238,67 +227,26 @@ export function Portfolio() {
                 viewport={{ once: true, margin: '-80px' }}
               >
                 {/* Project Header */}
-                <Box sx={{ marginBottom: '40px' }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '16px',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    <Box>
-                      <Typography
-                        variant="overline"
-                        sx={{
-                          color: '#D4952A',
-                          fontSize: '0.8rem',
-                          letterSpacing: '0.25em',
-                          fontWeight: 600,
-                          fontFamily: "'Barlow', sans-serif",
-                          display: 'block',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        {project.category} · {project.location}
-                      </Typography>
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontWeight: 900,
-                          color: '#F5EFE0',
-                          fontSize: { xs: '2rem', md: '2.75rem' },
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {project.title}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        width: '48px',
-                        height: '3px',
-                        background: '#D4952A',
-                        marginTop: { xs: '0', md: '16px' },
-                        flexShrink: 0,
-                        alignSelf: 'center',
-                      }}
-                    />
-                  </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '20px',
+                    marginBottom: '32px',
+                  }}
+                >
+                  <Box sx={{ width: '48px', height: '3px', background: '#D4952A', flexShrink: 0 }} />
                   <Typography
+                    variant="overline"
                     sx={{
-                      color: '#E8DFC8',
-                      fontSize: '1rem',
-                      lineHeight: 1.8,
-                      maxWidth: '680px',
-                      fontWeight: 300,
+                      color: '#D4952A',
+                      fontSize: '0.8rem',
+                      letterSpacing: '0.25em',
+                      fontWeight: 600,
                       fontFamily: "'Barlow', sans-serif",
                     }}
                   >
-                    {project.description}
+                    {project.category}
                   </Typography>
                 </Box>
 
