@@ -1,74 +1,137 @@
-import { useState } from 'react';
-import { Container, Box, Typography, Grid, Button } from '@mui/material';
+/**
+ * Portfolio Gallery
+ * =================
+ * Images are stored in Supabase and fetched at runtime — no hardcoded images.
+ *
+ * HOW TO ADD NEW PORTFOLIO IMAGES
+ * --------------------------------
+ * 1. Go to your Supabase dashboard → Storage → portfolio bucket.
+ *    Upload the image into the matching category folder, e.g.:
+ *      portfolio/basements/my-project.jpg
+ *      portfolio/exterior/front-stairs.jpg
+ *      portfolio/kitchens/kitchen-reno.jpg
+ *      portfolio/bathrooms/master-bath.jpg
+ *      portfolio/decks/backyard-deck.jpg
+ *      portfolio/interior/flooring-job.jpg
+ *      portfolio/before-after/kitchen-ba.jpg
+ *
+ * 2. Go to Table Editor → portfolio_images → Insert row:
+ *      title        : "Kitchen Renovation"           (optional, shown in lightbox)
+ *      category     : "Kitchens"                     (must match a filter label)
+ *      image_url    : <paste the public URL from Storage>
+ *      storage_path : "kitchens/kitchen-reno.jpg"    (optional, for reference)
+ *      sort_order   : 10                             (lower = appears first)
+ *      visible      : true
+ *
+ *    Public URL pattern:
+ *      https://ikqkpmviogbeowjqpfdp.supabase.co/storage/v1/object/public/portfolio/<path>
+ *
+ * 3. Refresh the website — the new image appears automatically.
+ *
+ * CATEGORIES (match these exactly in the category field):
+ *   Basement Renovation | Exterior Work | Flooring | Kitchens |
+ *   Bathrooms | Decks | Before & After
+ */
+
+import { useState, useEffect } from 'react';
+import { Container, Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ArrowRight, ZoomIn } from 'lucide-react';
+import { X, ArrowRight, ZoomIn, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import gregBsmt from '../../imports/GregBsmt.png';
-import gregBsmt1 from '../../imports/GregBsmt1.png';
-import joeStairs from '../../imports/JoeStairs.jpeg';
-import joeStairs1 from '../../imports/JoeStairs1.JPG';
-import rayAppt from '../../imports/RayAppt.jpeg';
-import rayAppt1 from '../../imports/RayAppt1.jpeg';
+import { supabase } from '../../../utils/supabase/client';
 
-type Category = 'All' | 'Basement Renovation' | 'Exterior Work' | 'Flooring';
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Project {
+interface PortfolioImage {
   id: string;
-  title: string;
-  category: Category;
-  photos: { src: string; alt: string }[];
+  title: string | null;
+  category: string;
+  image_url: string;
+  storage_path: string | null;
+  description: string | null;
+  sort_order: number;
+  is_featured: boolean;
+  created_at: string;
 }
 
-const projects: Project[] = [
-  {
-    id: 'basement-01',
-    title: 'Basement Renovation',
-    category: 'Basement Renovation',
-    photos: [
-      { src: gregBsmt, alt: 'Basement renovation — open concept with wet bar and laundry' },
-      { src: gregBsmt1, alt: 'Basement renovation — custom entertainment wall with cabinetry' },
-    ],
-  },
-  {
-    id: 'exterior-01',
-    title: 'Exterior Stairs',
-    category: 'Exterior Work',
-    photos: [
-      { src: joeStairs, alt: 'Exterior stone stairs — front angle' },
-      { src: joeStairs1, alt: 'Exterior stone stairs — side angle' },
-    ],
-  },
-  {
-    id: 'flooring-01',
-    title: 'Flooring Installation',
-    category: 'Flooring',
-    photos: [
-      { src: rayAppt, alt: 'LVP flooring installation — floor-to-ceiling windows' },
-      { src: rayAppt1, alt: 'LVP flooring installation — bedroom' },
-    ],
-  },
-];
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-const categories: Category[] = ['All', 'Basement Renovation', 'Exterior Work', 'Flooring'];
+const ALL = 'All';
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function Portfolio() {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState<Category>('All');
+
+  const [images, setImages] = useState<PortfolioImage[]>([]);
+  const [categories, setCategories] = useState<string[]>([ALL]);
+  const [activeCategory, setActiveCategory] = useState(ALL);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
-  const filtered =
-    activeCategory === 'All'
-      ? projects
-      : projects.filter((p) => p.category === activeCategory);
+  // ── Fetch from Supabase ──────────────────────────────────────────────────
+  useEffect(() => {
+    async function fetchImages() {
+      setLoading(true);
+      setError(null);
 
+      const { data, error: sbError } = await supabase
+        .from('portfolio_images')
+        .select('id, title, category, image_url, storage_path, description, sort_order, is_featured, created_at')
+        .eq('visible', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (sbError) {
+        setError('Unable to load portfolio images. Please try again later.');
+        setLoading(false);
+        return;
+      }
+
+      const rows = (data ?? []) as PortfolioImage[];
+      setImages(rows);
+
+      // Derive unique categories in the order they first appear
+      const seen = new Set<string>();
+      const cats = [ALL];
+      for (const row of rows) {
+        if (!seen.has(row.category)) {
+          seen.add(row.category);
+          cats.push(row.category);
+        }
+      }
+      setCategories(cats);
+      setLoading(false);
+    }
+
+    fetchImages();
+  }, []);
+
+  // ── Derived ──────────────────────────────────────────────────────────────
+  const filtered =
+    activeCategory === ALL ? images : images.filter((img) => img.category === activeCategory);
+
+  // Group images by category for display (each category gets its own section)
+  const grouped = filtered.reduce<{ category: string; items: PortfolioImage[] }[]>((acc, img) => {
+    const last = acc[acc.length - 1];
+    if (last && last.category === img.category) {
+      last.items.push(img);
+    } else {
+      acc.push({ category: img.category, items: [img] });
+    }
+    return acc;
+  }, []);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <Box sx={{ background: '#1C1C1C', minHeight: '100vh' }}>
-      {/* Hero */}
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <Box
         sx={{
           padding: { xs: '80px 24px 60px', md: '100px 60px 80px' },
-          background:
-            'linear-gradient(135deg, rgba(28,28,28,0.98) 0%, rgba(40,40,40,0.95) 100%)',
+          background: 'linear-gradient(135deg, rgba(28,28,28,0.98) 0%, rgba(40,40,40,0.95) 100%)',
           borderBottom: '1px solid rgba(212, 149, 42, 0.2)',
           position: 'relative',
           overflow: 'hidden',
@@ -83,11 +146,7 @@ export function Portfolio() {
         }}
       >
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <Typography
               variant="overline"
               sx={{
@@ -138,22 +197,10 @@ export function Portfolio() {
         </Container>
       </Box>
 
-      {/* Filter Bar */}
-      <Box
-        sx={{
-          padding: { xs: '40px 24px 0', md: '60px 60px 0' },
-          background: '#1C1C1C',
-        }}
-      >
+      {/* ── Filter Bar ───────────────────────────────────────────────────── */}
+      <Box sx={{ padding: { xs: '40px 24px 0', md: '60px 60px 0' }, background: '#1C1C1C' }}>
         <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: 'flex',
-              gap: '12px',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
+          <Box sx={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
             <Typography
               sx={{
                 color: '#6B6B6B',
@@ -181,20 +228,12 @@ export function Portfolio() {
                   fontFamily: "'Barlow', sans-serif",
                   transition: 'all 0.25s',
                   ...(activeCategory === cat
-                    ? {
-                        background: '#D4952A',
-                        color: '#1C1C1C',
-                        '&:hover': { background: '#E8B050' },
-                      }
+                    ? { background: '#D4952A', color: '#1C1C1C', '&:hover': { background: '#E8B050' } }
                     : {
                         background: 'transparent',
                         color: '#E8DFC8',
                         border: '1px solid rgba(212, 149, 42, 0.3)',
-                        '&:hover': {
-                          background: 'rgba(212, 149, 42, 0.1)',
-                          borderColor: '#D4952A',
-                          color: '#D4952A',
-                        },
+                        '&:hover': { background: 'rgba(212, 149, 42, 0.1)', borderColor: '#D4952A', color: '#D4952A' },
                       }),
                 }}
               >
@@ -202,8 +241,6 @@ export function Portfolio() {
               </Button>
             ))}
           </Box>
-
-          {/* Divider */}
           <Box
             sx={{
               height: '1px',
@@ -214,175 +251,198 @@ export function Portfolio() {
         </Container>
       </Box>
 
-      {/* Projects */}
+      {/* ── Gallery Body ─────────────────────────────────────────────────── */}
       <Box sx={{ padding: { xs: '60px 24px', md: '80px 60px' } }}>
         <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
-            {filtered.map((project, projectIndex) => (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-                viewport={{ once: true, margin: '-80px' }}
-              >
-                {/* Project Header */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    marginBottom: '32px',
-                  }}
-                >
-                  <Box sx={{ width: '48px', height: '3px', background: '#D4952A', flexShrink: 0 }} />
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      color: '#D4952A',
-                      fontSize: '0.8rem',
-                      letterSpacing: '0.25em',
-                      fontWeight: 600,
-                      fontFamily: "'Barlow', sans-serif",
-                    }}
-                  >
-                    {project.category}
-                  </Typography>
-                </Box>
 
-                {/* Photo Grid */}
-                <Grid container spacing={3}>
-                  {project.photos.map((photo, photoIndex) => (
-                    <Grid
-                      size={{ xs: 12, sm: 6 }}
-                      key={photoIndex}
+          {/* Loading */}
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '120px 0', gap: '16px' }}>
+              <CircularProgress size={28} sx={{ color: '#D4952A' }} />
+              <Typography sx={{ color: '#6B6B6B', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', letterSpacing: '0.1em' }}>
+                Loading gallery...
+              </Typography>
+            </Box>
+          )}
+
+          {/* Error */}
+          {!loading && error && (
+            <Box
+              sx={{
+                textAlign: 'center',
+                padding: '80px 0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px',
+              }}
+            >
+              <AlertCircle size={32} style={{ color: '#D4952A' }} />
+              <Typography sx={{ color: '#E8DFC8', fontFamily: "'Libre Baskerville', serif", fontSize: '1rem', fontStyle: 'italic' }}>
+                {error}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Empty */}
+          {!loading && !error && filtered.length === 0 && (
+            <Box sx={{ textAlign: 'center', padding: '80px 0' }}>
+              <Typography sx={{ color: '#6B6B6B', fontFamily: "'Libre Baskerville', serif", fontSize: '1.1rem', fontStyle: 'italic' }}>
+                No projects in this category yet — check back soon.
+              </Typography>
+            </Box>
+          )}
+
+          {/* Grouped sections */}
+          {!loading && !error && grouped.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
+              {grouped.map((group, groupIndex) => (
+                <motion.div
+                  key={group.category}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.1 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                >
+                  {/* Section header */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+                    <Box sx={{ width: '48px', height: '3px', background: '#D4952A', flexShrink: 0 }} />
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: '#D4952A',
+                        fontSize: '0.8rem',
+                        letterSpacing: '0.25em',
+                        fontWeight: 600,
+                        fontFamily: "'Barlow', sans-serif",
+                      }}
                     >
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.97 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: photoIndex * 0.12 }}
-                        viewport={{ once: true }}
-                      >
-                        <Box
-                          onClick={() => setLightbox(photo)}
-                          sx={{
-                            position: 'relative',
-                            overflow: 'hidden',
-                            cursor: 'pointer',
-                            border: '1px solid rgba(212, 149, 42, 0.15)',
-                            transition: 'all 0.4s',
-                            aspectRatio: '4/3',
-                            '&:hover': {
-                              borderColor: '#D4952A',
-                              boxShadow: '0 12px 40px rgba(212, 149, 42, 0.18)',
-                              '& .photo-overlay': { opacity: 1 },
-                              '& img': { transform: 'scale(1.04)' },
-                            },
-                          }}
+                      {group.category}
+                    </Typography>
+                  </Box>
+
+                  {/* Photo grid */}
+                  <Grid container spacing={3}>
+                    {group.items.map((img, imgIndex) => (
+                      <Grid size={{ xs: 12, sm: 6 }} key={img.id}>
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.97 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: imgIndex * 0.1 }}
+                          viewport={{ once: true }}
                         >
                           <Box
-                            component="img"
-                            src={photo.src}
-                            alt={photo.alt}
+                            onClick={() =>
+                              setLightbox({
+                                src: img.image_url,
+                                alt: img.title ?? img.category,
+                              })
+                            }
                             sx={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                              display: 'block',
-                              transition: 'transform 0.5s ease',
-                            }}
-                          />
-                          {/* Hover Overlay */}
-                          <Box
-                            className="photo-overlay"
-                            sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              background: 'rgba(28, 28, 28, 0.55)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              opacity: 0,
-                              transition: 'opacity 0.3s ease',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              border: '1px solid rgba(212, 149, 42, 0.15)',
+                              transition: 'all 0.4s',
+                              aspectRatio: '4/3',
+                              '&:hover': {
+                                borderColor: '#D4952A',
+                                boxShadow: '0 12px 40px rgba(212, 149, 42, 0.18)',
+                                '& .photo-overlay': { opacity: 1 },
+                                '& img': { transform: 'scale(1.04)' },
+                              },
                             }}
                           >
                             <Box
+                              component="img"
+                              src={img.image_url}
+                              alt={img.title ?? img.category}
+                              loading="lazy"
                               sx={{
-                                width: '56px',
-                                height: '56px',
-                                border: '2px solid #D4952A',
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                                transition: 'transform 0.5s ease',
+                              }}
+                            />
+                            {/* Hover overlay */}
+                            <Box
+                              className="photo-overlay"
+                              sx={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'rgba(28, 28, 28, 0.55)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: 'rgba(28,28,28,0.7)',
+                                opacity: 0,
+                                transition: 'opacity 0.3s ease',
                               }}
                             >
-                              <ZoomIn size={24} style={{ color: '#D4952A' }} />
+                              <Box
+                                sx={{
+                                  width: '56px',
+                                  height: '56px',
+                                  border: '2px solid #D4952A',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  background: 'rgba(28,28,28,0.7)',
+                                }}
+                              >
+                                <ZoomIn size={24} style={{ color: '#D4952A' }} />
+                              </Box>
+                            </Box>
+                            {/* Index badge */}
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                bottom: '12px',
+                                right: '12px',
+                                background: 'rgba(28,28,28,0.8)',
+                                border: '1px solid rgba(212,149,42,0.4)',
+                                padding: '4px 10px',
+                              }}
+                            >
+                              <Typography
+                                sx={{
+                                  color: '#D4952A',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 700,
+                                  letterSpacing: '0.15em',
+                                  fontFamily: "'Barlow', sans-serif",
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                {imgIndex + 1} / {group.items.length}
+                              </Typography>
                             </Box>
                           </Box>
-                          {/* Photo index badge */}
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              bottom: '12px',
-                              right: '12px',
-                              background: 'rgba(28,28,28,0.8)',
-                              border: '1px solid rgba(212,149,42,0.4)',
-                              padding: '4px 10px',
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                color: '#D4952A',
-                                fontSize: '0.7rem',
-                                fontWeight: 700,
-                                letterSpacing: '0.15em',
-                                fontFamily: "'Barlow', sans-serif",
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              {photoIndex + 1} / {project.photos.length}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </motion.div>
-                    </Grid>
-                  ))}
-                </Grid>
+                        </motion.div>
+                      </Grid>
+                    ))}
+                  </Grid>
 
-                {/* Project divider (not last) */}
-                {projectIndex < filtered.length - 1 && (
-                  <Box
-                    sx={{
-                      height: '1px',
-                      background:
-                        'linear-gradient(90deg, transparent 0%, rgba(212,149,42,0.2) 50%, transparent 100%)',
-                      marginTop: '100px',
-                    }}
-                  />
-                )}
-              </motion.div>
-            ))}
+                  {/* Section divider */}
+                  {groupIndex < grouped.length - 1 && (
+                    <Box
+                      sx={{
+                        height: '1px',
+                        background: 'linear-gradient(90deg, transparent 0%, rgba(212,149,42,0.2) 50%, transparent 100%)',
+                        marginTop: '100px',
+                      }}
+                    />
+                  )}
+                </motion.div>
+              ))}
+            </Box>
+          )}
 
-            {filtered.length === 0 && (
-              <Box sx={{ textAlign: 'center', padding: '80px 0' }}>
-                <Typography
-                  sx={{
-                    color: '#6B6B6B',
-                    fontFamily: "'Libre Baskerville', serif",
-                    fontSize: '1.1rem',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  No projects in this category yet — check back soon.
-                </Typography>
-              </Box>
-            )}
-          </Box>
         </Container>
       </Box>
 
-      {/* CTA Section */}
+      {/* ── CTA ──────────────────────────────────────────────────────────── */}
       <Box
         sx={{
           padding: { xs: '80px 24px', md: '100px 60px' },
@@ -468,7 +528,7 @@ export function Portfolio() {
         </Container>
       </Box>
 
-      {/* Lightbox */}
+      {/* ── Lightbox ─────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {lightbox && (
           <motion.div
@@ -497,7 +557,6 @@ export function Portfolio() {
               style={{ position: 'relative', maxWidth: '1200px', width: '100%' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close button */}
               <Box
                 onClick={() => setLightbox(null)}
                 sx={{
@@ -512,10 +571,7 @@ export function Portfolio() {
                   justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  '&:hover': {
-                    background: 'rgba(212,149,42,0.15)',
-                    borderColor: '#D4952A',
-                  },
+                  '&:hover': { background: 'rgba(212,149,42,0.15)', borderColor: '#D4952A' },
                 }}
               >
                 <X size={20} style={{ color: '#F5EFE0' }} />
