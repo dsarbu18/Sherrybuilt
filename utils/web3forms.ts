@@ -7,7 +7,7 @@
  * To change the key: update WEB3FORMS_ACCESS_KEY below.
  */
 
-export const WEB3FORMS_ACCESS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY_HERE';
+export const WEB3FORMS_ACCESS_KEY = 'c115c3fa-e842-490c-a0de-0f1317ebb30c';
 
 export interface QuotePayload {
   fullName: string;
