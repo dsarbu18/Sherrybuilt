@@ -179,7 +179,6 @@ export function QuoteRequest() {
               className="font-light max-w-2xl mx-auto"
               sx={{ fontFamily: '"Libre Baskerville", serif', fontStyle: 'italic', color: 'rgba(245, 239, 224, 0.85)', fontSize: { xs: '1.1rem', md: '1.3rem' } }}
             >
-              Tell us about your project and we'll provide a detailed estimate within 24 hours
             </Typography>
           </motion.div>
         </Container>
